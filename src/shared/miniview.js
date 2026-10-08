@@ -110,7 +110,8 @@
     .mv-body { flex: 1; min-width: 0; }
     .mv-title {
       display: block; font-size: 15px; font-weight: 500; line-height: 1.5;
-      letter-spacing: -0.005em; word-break: break-word; cursor: text;
+      letter-spacing: -0.005em; word-break: break-word; overflow-wrap: anywhere;
+      white-space: pre-wrap; cursor: text;
     }
     .mv-row.done .mv-title { color: var(--muted, #6b7280); text-decoration: line-through; text-decoration-color: var(--muted-2, #9aa1ad); }
     .mv-link { color: var(--accent, #5b6cff); text-decoration: none; word-break: break-all; }
@@ -128,6 +129,12 @@
     .mv-chip.due-soon { background: var(--accent-soft, rgba(91,108,255,.12)); color: var(--accent, #5b6cff); border-color: transparent; }
     .mv-chip.mv-chip-link { color: var(--accent, #5b6cff); }
     .mv-chip.mv-chip-link:hover { background: var(--accent-soft, rgba(91,108,255,.12)); }
+
+    .mv-note-preview {
+      margin: 7px 0 0; font-size: 13.5px; line-height: 1.55; color: var(--muted, #6b7280);
+      white-space: pre-wrap; overflow-wrap: anywhere;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
 
     .mv-expand, .mv-edit-btn, .mv-del {
       flex: none; width: 30px; height: 30px; border-radius: 9px; color: var(--muted-2, #9aa1ad);
@@ -158,6 +165,8 @@
     .mv-title-input {
       width: 100%; border: 1px solid var(--border, #e2e4e8); background: var(--soft, #f6f7fb);
       border-radius: 10px; padding: 9px 11px; font-size: 15px; font-weight: 500; outline: none;
+      font-family: inherit; line-height: 1.5; min-height: 42px; display: block;
+      resize: none; overflow: hidden; white-space: pre-wrap; overflow-wrap: anywhere;
       transition: border-color .14s, box-shadow .14s, background-color .14s;
     }
     .mv-title-input:focus { border-color: var(--accent, #5b6cff); background: var(--bg, #fff); box-shadow: 0 0 0 4px var(--accent-ring, rgba(91,108,255,.22)); }
@@ -165,6 +174,7 @@
       width: 100%; min-height: 62px; resize: vertical; padding: 10px 12px;
       border: 1px solid var(--border, #e2e4e8); border-radius: 11px;
       background: var(--soft, #f6f7fb); outline: none; font-size: 13.5px; line-height: 1.55;
+      white-space: pre-wrap; overflow-wrap: anywhere;
       transition: border-color .14s, box-shadow .14s, background-color .14s;
     }
     .mv-notes:focus { border-color: var(--accent, #5b6cff); background: var(--bg, #fff); box-shadow: 0 0 0 4px var(--accent-ring, rgba(91,108,255,.22)); }
@@ -240,7 +250,6 @@
     if (t.url) out.push(`<a class="mv-chip mv-chip-link" href="${esc(t.url)}" target="_blank" rel="noopener noreferrer">${I.link}${esc(U.truncate(urlLabel(t.url), 28))}</a>`);
     const sub = U.subtaskProgress(t);
     if (sub.total) out.push(`<span class="mv-chip">${sub.done}/${sub.total} subtasks</span>`);
-    if (t.notes) out.push(`<span class="mv-chip">note</span>`);
     return out.join("");
   }
 
@@ -293,6 +302,7 @@
         <span class="mv-title" data-mv="title-view" data-id="${t.id}">${linkify(t.title)}</span>
         ${meta ? `<div class="mv-meta">${meta}</div>` : ""}
         ${completedMeta}
+        ${!expanded && t.notes ? `<p class="mv-note-preview">${linkify(t.notes)}</p>` : ""}
         ${expanded ? detailView(t) : ""}
       </div>
       <button type="button" class="mv-expand ${expanded ? "open" : ""}" data-mv="expand" data-id="${t.id}" aria-label="Toggle details" title="Details">${I.chevron}</button>
@@ -307,7 +317,7 @@
       <input type="checkbox" class="mv-check" data-mv="toggle" data-id="${t.id}" ${done ? "checked" : ""} aria-label="${done ? "Mark incomplete" : "Mark complete"}" />
       <div class="mv-body">
         <div class="mv-edit">
-          <input type="text" class="mv-title-input" data-mv="title" data-id="${t.id}" value="${esc(t.title)}" placeholder="Task title" aria-label="Task title" />
+          <textarea class="mv-title-input" data-mv="title" data-id="${t.id}" rows="1" placeholder="Task title" aria-label="Task title">${esc(t.title)}</textarea>
           <textarea class="mv-notes" data-mv="notes" data-id="${t.id}" placeholder="Notes…" aria-label="Notes">${esc(t.notes || "")}</textarea>
           <div class="mv-drow">
             <label class="mv-field">Due<input type="date" class="mv-due" data-mv="due" data-id="${t.id}" value="${t.dueDate || ""}" aria-label="Due date" /></label>
@@ -381,6 +391,12 @@
         .sort((a, b) => (b.completedAt || 0) - (a.completedAt || 0));
     }
 
+    function autosize(el) {
+      if (!el) return;
+      el.style.height = "auto";
+      el.style.height = Math.min(el.scrollHeight, 320) + "px";
+    }
+
     function rowFor(t) {
       return ui.editing.has(t.id) ? editRow(t) : viewRow(t, ui.expanded.has(t.id));
     }
@@ -410,6 +426,8 @@
       clist.innerHTML = done.map(rowFor).join("");
       clist.hidden = !ui.completedOpen;
       completedHead.setAttribute("aria-expanded", String(ui.completedOpen));
+
+      root.querySelectorAll(".mv-title-input").forEach(autosize);
 
       if (ui.focusEdit) {
         const el = root.querySelector(`.mv-row[data-id="${ui.focusEdit}"] .mv-title-input`);
@@ -482,6 +500,11 @@
       if (title) startEdit(title.dataset.id);
     });
 
+    root.addEventListener("input", (e) => {
+      const el = e.target.closest(".mv-title-input");
+      if (el) autosize(el);
+    });
+
     root.addEventListener("change", (e) => {
       const el = e.target.closest("[data-mv]");
       if (!el) return;
@@ -529,7 +552,7 @@
       const el = e.target.closest("[data-mv]");
       if (!el) return;
       const act = el.dataset.mv;
-      if (act === "title" && e.key === "Enter") {
+      if (act === "title" && e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
         el.blur();
       } else if (act === "title" && e.key === "Escape") {

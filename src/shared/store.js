@@ -138,7 +138,11 @@
   }
 
   function sanitizeTitle(title) {
-    return String(title == null ? "" : title).replace(/\s+/g, " ").trim().slice(0, 500);
+    return String(title == null ? "" : title)
+      .replace(/[^\S\n]+/g, " ") // collapse spaces/tabs, but keep line breaks
+      .replace(/\n{3,}/g, "\n\n")
+      .trim()
+      .slice(0, 2000);
   }
 
   /* --------------------------------------------------------------------- *
