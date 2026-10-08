@@ -1,0 +1,8 @@
+# dependencies (none in this project, but just in case)
+node_modules/
+
+# editor / OS
+.DS_Store
+.vscode/
+.idea/
+*.log
