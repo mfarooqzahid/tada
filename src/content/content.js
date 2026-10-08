@@ -30,11 +30,13 @@
     :host {
       all: initial;
       --bg: #ffffff;
+      --surface: #ffffff;
       --fg: #1b1e28;
       --muted: #6b7280;
       --muted-2: #9aa1ad;
       --border: #e7e9f2;
       --border-soft: #eff1f7;
+      --border-strong: #cdd4e6;
       --soft: #f6f7fb;
       --accent: #5b6cff;
       --accent-2: #9a6cff;

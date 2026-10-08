@@ -27,10 +27,16 @@ first capture flow that works on any page.
 - Toolbar popup for quick capture from anywhere.
 
 **Organise (without the clutter)**
-- Expand any task to add **notes**, a **due date**, and **subtasks**.
+- Tasks open in a clean **view mode** — your text is just text. Click the pencil
+  (or double-click the title) to switch a task into **edit mode** with proper
+  fields, then hit **Done**.
+- **Links**: paste a URL into the **Link** field, or just type a URL as the
+  title — URLs are auto-detected and clickable. Tasks captured from a page keep
+  a link back to their source.
+- Alongside that: **notes**, a **due date**, and **subtasks**.
+- Each task is its own bordered card, so tasks are easy to tell apart.
 - Completed tasks move to the expandable **Completed** section, which shows when
   each was finished and lets you reopen them with one click.
-- Task order can be left as-is; the list is simply top-to-bottom.
 
 **Safe**
 - Deleting shows an **Undo** toast.
@@ -113,8 +119,8 @@ src/
 ```js
 {
   version, createdAt,
-  todos: [{ id, title, notes, completed, completedAt, priority, listId, tags,
-            dueDate, subtasks: [{id,title,done}], createdAt, updatedAt,
+  todos: [{ id, title, notes, url, completed, completedAt, priority, listId,
+            tags, dueDate, subtasks: [{id,title,done}], createdAt, updatedAt,
             deletedAt, order, sourceUrl, sourceTitle }],
   lists: [{ id, name, color, createdAt }],
   history: [{ id, at, action, todoId, summary, changes?, snapshot? }],

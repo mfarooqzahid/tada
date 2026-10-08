@@ -60,6 +60,7 @@
       if (!Array.isArray(t.tags)) t.tags = [];
       if (!Array.isArray(t.subtasks)) t.subtasks = [];
       if (typeof t.notes !== "string") t.notes = "";
+      if (t.url === undefined) t.url = null;
       if (typeof t.order !== "number") t.order = t.createdAt || now();
       if (!t.listId) t.listId = "inbox";
       if (typeof t.completed !== "boolean") t.completed = false;
@@ -158,6 +159,7 @@
       listId,
       tags: Array.isArray(payload.tags) ? payload.tags.slice(0, 20) : [],
       dueDate: payload.dueDate || null,
+      url: typeof payload.url === "string" && payload.url.trim() ? payload.url.trim() : null,
       subtasks: Array.isArray(payload.subtasks) ? payload.subtasks : [],
       createdAt: ts,
       updatedAt: ts,
